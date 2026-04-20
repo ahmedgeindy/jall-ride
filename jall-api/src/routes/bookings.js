@@ -6,6 +6,8 @@ const auth = require('../middleware/auth');
 router.use(auth);
 
 router.post('/', async (req, res, next) => {
+  let client;
+
   try {
     const { car_id, pickup_location, destination, ride_date } = req.body;
 
@@ -15,16 +17,52 @@ router.post('/', async (req, res, next) => {
       });
     }
 
-    const { rows } = await pool.query(
+    client = await pool.connect();
+    await client.query('BEGIN');
+
+    const carResult = await client.query(
+      'SELECT id, available FROM cars WHERE id = $1 FOR UPDATE',
+      [car_id]
+    );
+
+    if (carResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Car not found' });
+    }
+
+    if (!carResult.rows[0].available) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ error: 'Car is not available' });
+    }
+
+    const { rows } = await client.query(
       `INSERT INTO bookings (user_id, car_id, pickup_location, destination, ride_date)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
       [req.user.id, car_id, pickup_location, destination, ride_date]
     );
 
+    await client.query(
+      'UPDATE cars SET available = FALSE WHERE id = $1',
+      [car_id]
+    );
+
+    await client.query('COMMIT');
+
     res.status(201).json(rows[0]);
   } catch (err) {
+    if (client) {
+      try {
+        await client.query('ROLLBACK');
+      } catch {
+        // The original error is more useful than a failed rollback attempt.
+      }
+    }
     next(err);
+  } finally {
+    if (client) {
+      client.release();
+    }
   }
 });
 

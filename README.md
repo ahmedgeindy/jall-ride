@@ -46,6 +46,7 @@ docker compose up -d
 ```bash
 cd jall-api
 npm install
+npm run db:migrate
 npm run dev
 ```
 

@@ -37,17 +37,15 @@ jobs:
           cache: npm
           cache-dependency-path: jall-api/package-lock.json
 
-      - name: Install PostgreSQL client
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client
-
       - name: Install dependencies
         working-directory: jall-api
         run: npm ci
 
-      - name: Seed test database
+      - name: Apply schema
+        working-directory: jall-api
         env:
-          PGPASSWORD: jall_secret
-        run: psql -h localhost -U jall -d jalldb -f jall-api/src/db/schema.sql
+          DATABASE_URL: postgresql://jall:jall_secret@localhost:5432/jalldb
+        run: npm run db:migrate
 
       - name: Run tests
         working-directory: jall-api
@@ -58,15 +56,23 @@ jobs:
         run: npm test
 
       - name: Deploy to EC2 via SSH
+        env:
+          DATABASE_URL: ${{ secrets.DB_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          DEPLOY_SHA: ${{ github.sha }}
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
+          envs: DATABASE_URL,JWT_SECRET,DEPLOY_SHA
           script: |
+            set -e
             cd ~/jall
-            git pull origin main
+            git fetch --depth=1 origin "$DEPLOY_SHA"
+            git checkout --force "$DEPLOY_SHA"
             cd jall-api
             npm ci --omit=dev
-            pm2 restart jall-api || pm2 start server.js --name jall-api
+            DATABASE_URL="$DATABASE_URL" npm run db:migrate
+            JWT_SECRET="$JWT_SECRET" DATABASE_URL="$DATABASE_URL" pm2 restart jall-api --update-env || JWT_SECRET="$JWT_SECRET" DATABASE_URL="$DATABASE_URL" pm2 start server.js --name jall-api --update-env
             pm2 save

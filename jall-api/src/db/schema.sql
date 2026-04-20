@@ -34,3 +34,25 @@ INSERT INTO cars (make, model, plate, seats, available) VALUES
   ('Honda', 'Civic', 'ABC-002', 4, TRUE),
   ('Hyundai', 'Elantra', 'ABC-003', 5, TRUE)
 ON CONFLICT DO NOTHING;
+
+-- ── Admin Dashboard Migration ──────────────────────────────────────────────
+
+-- Users: add role column
+ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'user';
+
+-- Cars: add color column
+ALTER TABLE cars ADD COLUMN IF NOT EXISTS color VARCHAR(50);
+
+-- Drivers table
+CREATE TABLE IF NOT EXISTS drivers (
+  id          SERIAL PRIMARY KEY,
+  name        VARCHAR(120)  NOT NULL,
+  phone       VARCHAR(20),
+  available   BOOLEAN       NOT NULL DEFAULT TRUE,
+  created_at  TIMESTAMPTZ   DEFAULT NOW()
+);
+
+-- Bookings: add status, price, driver reference
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS status    VARCHAR(20)     NOT NULL DEFAULT 'pending';
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS price     NUMERIC(10,2)   NOT NULL DEFAULT 0;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS driver_id INT REFERENCES drivers(id) ON DELETE SET NULL;

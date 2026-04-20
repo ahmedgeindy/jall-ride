@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS bookings (
 );
 
 INSERT INTO users (name, email, password) VALUES
-  ('Test User', 'test@jall.com', '$2b$10$KIX8Jm5LMrz0Y6K9FvKkCOxHd4YJnSFUuqoVXJXvqDfKK4LKMHXmG')
+  ('Test User', 'test@jall.com', '$2b$10$GMZ5mnaa/ldMTkV2/gU1AuDEPeTqubbpDMa/KQiWfFwTGeBhnSN.m')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO cars (make, model, plate, seats, available) VALUES

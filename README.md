@@ -66,6 +66,8 @@ flutter pub get
 flutter run
 ```
 
+The Flutter client defaults to `http://10.0.2.2:5009`, which is the Android emulator loopback to your host machine. Override it for other targets with `--dart-define=JALL_API_BASE_URL=http://localhost:5009` or your machine's LAN IP.
+
 ## GitHub Secrets Required for CI/CD
 
 | Secret      | Description                          |

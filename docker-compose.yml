@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: jall
+      POSTGRES_PASSWORD: jall_secret
+      POSTGRES_DB: jalldb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./jall-api/src/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+volumes:
+  pgdata:

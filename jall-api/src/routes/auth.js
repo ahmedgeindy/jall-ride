@@ -29,7 +29,7 @@ router.post('/login', async (req, res, next) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, email: user.email },
+      { id: user.id, email: user.email, role: user.role ?? 'user' },
       process.env.JWT_SECRET,
       { expiresIn: '8h' }
     );
@@ -40,6 +40,7 @@ router.post('/login', async (req, res, next) => {
         id: user.id,
         name: user.name,
         email: user.email,
+        role: user.role ?? 'user',
       },
     });
   } catch (err) {

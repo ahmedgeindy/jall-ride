@@ -1,4 +1,4 @@
-name: Deploy Jall Admin (S3 + CloudFront)
+name: Deploy Jall Admin
 
 on:
   push:
@@ -29,27 +29,35 @@ jobs:
       - name: Build
         working-directory: jall-admin
         env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_API_URL: ""
         run: npm run build
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region:            ${{ secrets.AWS_REGION }}
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            set -e
+            rm -rf ~/jall-admin-dist-old
+            mv ~/jall-admin-dist ~/jall-admin-dist-old
 
-      - name: Sync dist/ to S3
-        run: |
-          aws s3 sync jall-admin/dist/ s3://${{ secrets.S3_BUCKET }} \
-            --delete \
-            --cache-control "public,max-age=31536000,immutable" \
-            --exclude "index.html"
-          aws s3 cp jall-admin/dist/index.html s3://${{ secrets.S3_BUCKET }}/index.html \
-            --cache-control "no-cache,no-store,must-revalidate"
+      - name: Upload dist to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          source: "jall-admin/dist/*"
+          target: "/home/ec2-user/jall-admin-dist"
+          strip_components: 2
 
-      - name: Invalidate CloudFront cache
-        run: |
-          aws cloudfront create-invalidation \
-            --distribution-id ${{ secrets.CF_DISTRIBUTION_ID }} \
-            --paths "/*"
+      - name: Reload nginx
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            sudo nginx -t && sudo systemctl reload nginx

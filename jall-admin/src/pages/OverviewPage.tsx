@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import {
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
@@ -16,10 +17,12 @@ function formatSAR(amount: number) {
 export default function OverviewPage() {
   const { stats, loading } = useDashboardStats();
 
+  useEffect(() => { document.title = 'Overview · Jall Admin'; }, []);
+
   return (
     <div className="flex min-h-screen bg-brand-canvas">
       <Sidebar />
-      <main className="flex-1 overflow-auto p-6 pt-16 md:p-8 md:pt-8">
+      <main id="main-content" className="flex-1 overflow-auto p-6 pt-16 md:p-8 md:pt-8">
         <div className="mx-auto max-w-6xl">
           <h1 className="mb-6 text-2xl font-semibold tracking-tightish text-brand-ink">Overview</h1>
 
@@ -63,7 +66,7 @@ export default function OverviewPage() {
                 <ResponsiveContainer width="100%" height={220}>
                   <BarChart
                     data={stats?.bookingsPerDay ?? []}
-                    margin={{ top: 4, right: 8, bottom: 4, left: -24 }}
+                    margin={{ top: 4, right: 8, bottom: 4, left: -12 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E8E4DA" />
                     <XAxis

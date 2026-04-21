@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, CalendarDays, Car, LogOut, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -58,10 +58,10 @@ function NavLinks({ onClose }: { onClose?: () => void }) {
         })}
       </nav>
 
-      <div className="border-t border-white/10 p-5">
+      <div className="border-t border-white/10 p-3">
         <button
           onClick={logout}
-          className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-label text-brand-subtle transition-colors hover:text-brand-canvas"
+          className="flex min-h-[44px] items-center gap-2 px-2 text-[11px] font-medium uppercase tracking-label text-brand-subtle transition-colors hover:text-brand-canvas"
         >
           <LogOut size={14} strokeWidth={1.5} />
           Sign out
@@ -74,11 +74,24 @@ function NavLinks({ onClose }: { onClose?: () => void }) {
 export default function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileOpen]);
+
   return (
     <>
+      <a href="#main-content" className="skip-link">
+        Skip to content
+      </a>
       <button
         onClick={() => setMobileOpen(true)}
-        className="fixed left-4 top-4 z-50 rounded-lg bg-brand-ink p-2 text-brand-canvas md:hidden"
+        className="fixed left-4 top-4 z-50 flex h-11 w-11 items-center justify-center rounded-lg bg-brand-ink text-brand-canvas md:hidden safe-area-top"
+        style={{ left: 'max(1rem, env(safe-area-inset-left))', top: 'max(1rem, env(safe-area-inset-top))' }}
         aria-label="Open menu"
       >
         <Menu size={20} />
@@ -93,13 +106,14 @@ export default function Sidebar() {
 
       <div
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-[220px] transform transition-transform duration-200 md:hidden',
+          'fixed inset-y-0 left-0 z-50 w-[280px] transform transition-transform duration-200 md:hidden safe-area-x',
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         )}
+        style={{ paddingLeft: 'max(0px, env(safe-area-inset-left))' }}
       >
         <button
           onClick={() => setMobileOpen(false)}
-          className="absolute right-3 top-4 text-brand-subtle hover:text-brand-canvas"
+          className="absolute right-3 top-4 flex h-11 w-11 items-center justify-center text-brand-subtle hover:text-brand-canvas"
           aria-label="Close menu"
         >
           <X size={20} />

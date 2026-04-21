@@ -1,10 +1,18 @@
 import { Inbox } from 'lucide-react';
 
-export default function EmptyState({ message = 'No bookings found' }: { message?: string }) {
+interface EmptyStateProps {
+  message?: string;
+  hint?: string;
+}
+
+export default function EmptyState({ message = 'No bookings found', hint }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-      <Inbox className="mb-3 h-12 w-12 opacity-50" />
-      <p className="text-sm">{message}</p>
+    <div className="flex flex-col items-center justify-center py-16">
+      <Inbox className="mb-3 h-10 w-10 text-brand-hairline" strokeWidth={1.5} />
+      <p className="text-sm text-brand-muted">{message}</p>
+      {hint && (
+        <p className="mt-1 text-xs text-brand-subtle">{hint}</p>
+      )}
     </div>
   );
 }

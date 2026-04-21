@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button }   from '@/components/ui/button';
@@ -11,6 +11,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading,  setLoading ] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => { document.title = 'Sign in · Jall Admin'; }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -61,7 +63,7 @@ export default function LoginPage() {
                   onChange={e => setEmail(e.target.value)}
                   required
                   autoComplete="email"
-                  className="border-brand-hairline rounded-sm focus-visible:ring-brand-accent"
+                  className="border-brand-hairline rounded-sm focus-visible:ring-brand-accent-ink"
                 />
               </div>
               <div className="space-y-2">
@@ -75,7 +77,7 @@ export default function LoginPage() {
                   onChange={e => setPassword(e.target.value)}
                   required
                   autoComplete="current-password"
-                  className="border-brand-hairline rounded-sm focus-visible:ring-brand-accent"
+                  className="border-brand-hairline rounded-sm focus-visible:ring-brand-accent-ink"
                 />
               </div>
               <Button

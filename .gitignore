@@ -1,3 +1,10 @@
 .remember/
 .worktrees/
 worktrees/
+
+*.pem
+*.key
+.env
+.env.*
+!.env.local
+!.env.production

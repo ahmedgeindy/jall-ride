@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "jall-api/**"
+      - ".github/workflows/deploy.yml"
 
 jobs:
   test-and-deploy:
@@ -39,7 +40,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: jall-api
-        run: npm ci
+        run: npm install --frozen-lockfile || npm install
 
       - name: Apply schema
         working-directory: jall-api
@@ -72,7 +73,7 @@ jobs:
             git fetch --depth=1 origin "$DEPLOY_SHA"
             git checkout --force "$DEPLOY_SHA"
             cd jall-api
-            npm ci --omit=dev
+            npm install --omit=dev
             DATABASE_URL="$DATABASE_URL" npm run db:migrate
             JWT_SECRET="$JWT_SECRET" DATABASE_URL="$DATABASE_URL" pm2 restart jall-api --update-env || JWT_SECRET="$JWT_SECRET" DATABASE_URL="$DATABASE_URL" pm2 start server.js --name jall-api --update-env
             pm2 save

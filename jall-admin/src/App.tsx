@@ -22,7 +22,7 @@ export default function App() {
         position="top-right"
         toastOptions={{
           classNames: {
-            toast: 'bg-brand-ink text-brand-canvas border-l-2 border-brand-accent rounded-sm shadow-none',
+            toast: 'bg-brand-ink text-brand-canvas border border-brand-accent/40 rounded-sm shadow-none',
             title: 'text-sm font-medium tracking-tightish',
             description: 'text-xs text-brand-subtle',
           },

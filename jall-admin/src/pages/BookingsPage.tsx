@@ -53,12 +53,13 @@ export default function BookingsPage() {
       .catch(() => {});
   }, []);
 
-  const { bookings, setBookings, loading } = useBookings({
+  const { bookings, setBookings, loading, error, refetch } = useBookings({
     status: activeStatus,
     search: debouncedSearch,
   });
 
   const isSearching = search !== debouncedSearch;
+  const needsDriver = (b: Booking) => b.status === 'pending' && !b.driver_id;
 
   async function handleStatusChange(booking: Booking, newStatus: BookingStatus) {
     const prev = booking.status;
@@ -111,6 +112,15 @@ export default function BookingsPage() {
               onChange={e => setSearch(e.target.value)}
               className="w-full bg-brand-paper border-brand-hairline sm:max-w-sm"
             />
+            {search && !isSearching && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-subtle hover:text-brand-ink transition-colors sm:right-[calc(100%-13rem+0.75rem)] leading-none text-base"
+                aria-label="Clear search"
+              >
+                ×
+              </button>
+            )}
             {isSearching && (
               <span className="absolute right-3 top-1/2 -translate-y-1/2 h-3 w-3 rounded-full border border-brand-hairline border-t-brand-muted animate-spin sm:right-[calc(100%-13rem)]" />
             )}
@@ -134,7 +144,7 @@ export default function BookingsPage() {
                     {isActive && (
                       <span
                         aria-hidden
-                        className="absolute -bottom-px left-0 right-0 h-0.5 bg-brand-ink"
+                        className="absolute -bottom-px left-0 right-0 h-0.5 bg-brand-accent"
                       />
                     )}
                   </button>
@@ -150,13 +160,27 @@ export default function BookingsPage() {
                   <Skeleton key={i} className="h-10 w-full rounded" />
                 ))}
               </div>
+            ) : error ? (
+              <div className="flex flex-col items-center justify-center py-16">
+                <p className="text-sm text-brand-muted">{error}</p>
+                <button
+                  onClick={refetch}
+                  className="mt-3 text-[11px] font-medium uppercase tracking-label text-brand-subtle underline underline-offset-4 decoration-brand-hairline hover:text-brand-ink hover:decoration-brand-accent transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
             ) : bookings.length === 0 ? (
               <EmptyState {...emptyMessage(activeStatus, debouncedSearch)} />
             ) : (
               <>
                 <div className="md:hidden divide-y divide-brand-hairline">
                   {bookings.map((booking) => (
-                    <div key={booking.id} className={`px-4 py-3 space-y-3 transition-opacity ${isResolved(booking.status) ? 'opacity-50' : ''}`}>
+                    <div
+                      key={booking.id}
+                      className={`px-4 py-3 space-y-3 transition-opacity ${isResolved(booking.status) ? 'opacity-60' : ''}`}
+                      aria-disabled={isResolved(booking.status) ? 'true' : undefined}
+                    >
                       <div className="flex items-center justify-between">
                         <span className="font-mono text-xs text-brand-subtle">#{booking.id}</span>
                         <StatusBadge status={booking.status} />
@@ -175,7 +199,12 @@ export default function BookingsPage() {
                             value={booking.driver_id?.toString() ?? ''}
                             onValueChange={val => handleAssignDriver(booking, val)}
                           >
-                            <SelectTrigger className="h-9 w-full text-xs border-brand-hairline">
+                            <SelectTrigger
+                              className={[
+                                'h-9 w-full text-xs border-brand-hairline transition-colors',
+                                needsDriver(booking) ? 'outline outline-1 outline-brand-accent' : '',
+                              ].join(' ')}
+                            >
                               <SelectValue placeholder="Assign…" />
                             </SelectTrigger>
                             <SelectContent>
@@ -228,7 +257,8 @@ export default function BookingsPage() {
                       {bookings.map((booking) => (
                         <TableRow
                           key={booking.id}
-                          className={`border-b border-brand-hairline hover:bg-brand-canvas transition-colors ${isResolved(booking.status) ? 'opacity-50' : ''}`}
+                          className={`border-b border-brand-hairline hover:bg-brand-canvas transition-colors ${isResolved(booking.status) ? 'opacity-60' : ''}`}
+                          aria-disabled={isResolved(booking.status) ? 'true' : undefined}
                         >
                           <TableCell className="font-mono text-xs text-brand-subtle">
                             #{booking.id}
@@ -250,7 +280,12 @@ export default function BookingsPage() {
                               value={booking.driver_id?.toString() ?? ''}
                               onValueChange={val => handleAssignDriver(booking, val)}
                             >
-                              <SelectTrigger className="h-8 w-36 text-xs border-brand-hairline">
+                              <SelectTrigger
+                                className={[
+                                  'h-8 w-36 text-xs border-brand-hairline transition-colors',
+                                  needsDriver(booking) ? 'outline outline-1 outline-brand-accent' : '',
+                                ].join(' ')}
+                              >
                                 <SelectValue placeholder="Assign…" />
                               </SelectTrigger>
                               <SelectContent>

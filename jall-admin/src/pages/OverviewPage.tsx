@@ -15,16 +15,30 @@ function formatSAR(amount: number) {
 }
 
 export default function OverviewPage() {
-  const { stats, loading } = useDashboardStats();
+  const { stats, loading, error } = useDashboardStats();
 
   useEffect(() => { document.title = 'Overview · Jall Admin'; }, []);
+
+  const todayStr = new Date().toISOString().slice(0, 10);
 
   return (
     <div className="flex min-h-screen bg-brand-canvas">
       <Sidebar />
       <main id="main-content" className="flex-1 overflow-auto p-6 pt-16 md:p-8 md:pt-8">
         <div className="mx-auto max-w-6xl">
-          <h1 className="mb-6 text-2xl font-semibold tracking-tightish text-brand-ink">Overview</h1>
+          <h1 className="mb-8 text-2xl font-semibold tracking-tightish text-brand-ink">Overview</h1>
+
+          {error && (
+            <div className="mb-6 rounded-sm border border-brand-hairline bg-brand-paper px-4 py-3 text-sm text-brand-muted">
+              {error} —{' '}
+              <button
+                onClick={() => window.location.reload()}
+                className="font-medium text-brand-ink underline underline-offset-4 decoration-brand-hairline hover:decoration-brand-accent transition-colors"
+              >
+                Retry
+              </button>
+            </div>
+          )}
 
           <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {loading
@@ -82,12 +96,13 @@ export default function OverviewPage() {
                         borderRadius: 4,
                         border: '1px solid #E8E4DA',
                         fontSize: 13,
+                        fontFamily: 'inherit',
                       }}
                       cursor={{ fill: 'rgba(11,11,15,0.04)' }}
                     />
                     <Bar dataKey="count" name="Bookings" radius={[2, 2, 0, 0]}>
-                      {(stats?.bookingsPerDay ?? []).map((_, i, arr) => (
-                        <Cell key={i} fill={i === arr.length - 1 ? '#B8893B' : '#0B0B0F'} />
+                      {(stats?.bookingsPerDay ?? []).map((entry, i) => (
+                        <Cell key={i} fill={entry.date === todayStr ? '#B8893B' : '#0B0B0F'} />
                       ))}
                     </Bar>
                   </BarChart>

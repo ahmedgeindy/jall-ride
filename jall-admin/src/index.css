@@ -60,3 +60,13 @@ html, body { font-family: theme('fontFamily.sans'); background: theme('colors.br
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
+
+[data-slot="skeleton"],
+.animate-pulse {
+  background-color: #E8E4DA;
+}
+
+*:focus-visible {
+  outline: 2px solid #8C6A2D;
+  outline-offset: 2px;
+}

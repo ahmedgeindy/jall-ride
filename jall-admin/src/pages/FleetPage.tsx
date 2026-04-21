@@ -9,6 +9,7 @@ import Sidebar      from '@/components/Sidebar';
 import EmptyState   from '@/components/EmptyState';
 import api from '@/api/client';
 import type { Car } from '@/types';
+import { Car as CarIcon } from 'lucide-react';
 
 export default function FleetPage() {
   const [cars,    setCars   ] = useState<Car[]>([]);
@@ -40,7 +41,21 @@ export default function FleetPage() {
     setCars(list => list.map(c => c.id === car.id ? { ...c, available: !prev } : c));
     try {
       await api.patch(`/cars/${car.id}/availability`, { available: !prev });
-      toast.success(`${car.make} ${car.model} marked as ${!prev ? 'available' : 'busy'}`);
+      toast.success(`${car.make} ${car.model} marked as ${!prev ? 'available' : 'busy'}`, {
+        duration: 5000,
+        action: {
+          label: 'Undo',
+          onClick: async () => {
+            setCars(list => list.map(c => c.id === car.id ? { ...c, available: prev } : c));
+            try {
+              await api.patch(`/cars/${car.id}/availability`, { available: prev });
+            } catch {
+              setCars(list => list.map(c => c.id === car.id ? { ...c, available: !prev } : c));
+              toast.error('Could not undo — please try again');
+            }
+          },
+        },
+      });
     } catch {
       setCars(list => list.map(c => c.id === car.id ? { ...c, available: prev } : c));
       toast.error('Failed to update availability');
@@ -72,6 +87,7 @@ export default function FleetPage() {
               </div>
             ) : filtered.length === 0 ? (
               <EmptyState
+                icon={CarIcon}
                 message={search ? 'No matching vehicles' : 'No vehicles in fleet'}
                 hint={search ? 'Try a different search term' : 'Add vehicles to get started'}
               />
@@ -81,17 +97,17 @@ export default function FleetPage() {
                   {filtered.map((car) => (
                     <div key={car.id} className="flex items-center justify-between gap-3 px-4 py-3">
                       <div className="min-w-0 flex-1">
-                        <div className="font-mono text-sm font-semibold text-brand-muted">{car.plate}</div>
+                        <div className="font-mono text-sm font-semibold text-brand-ink">{car.plate}</div>
                         <div className="text-sm font-medium text-brand-ink">{car.make} {car.model}</div>
                         <div className="text-xs text-brand-subtle">{car.color ?? '—'} · {car.seats} seats</div>
                       </div>
                       <div className="flex flex-shrink-0 items-center gap-3">
                         {car.available ? (
-                          <span className="inline-flex items-center rounded-sm border border-brand-ink px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-label text-brand-ink">
+                          <span className="inline-flex items-center rounded-sm bg-brand-ink px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-label text-brand-canvas">
                             Available
                           </span>
                         ) : (
-                          <span className="inline-flex items-center px-0 py-0.5 text-[11px] font-medium uppercase tracking-label text-brand-muted">
+                          <span className="text-[11px] font-medium uppercase tracking-label text-brand-muted">
                             Busy
                           </span>
                         )}
@@ -123,7 +139,7 @@ export default function FleetPage() {
                           key={car.id}
                           className="border-b border-brand-hairline hover:bg-brand-canvas transition-colors"
                         >
-                          <TableCell className="font-mono text-sm font-semibold text-brand-muted">
+                          <TableCell className="font-mono text-sm font-semibold text-brand-ink">
                             {car.plate}
                           </TableCell>
                           <TableCell className="font-medium text-brand-ink">
@@ -137,11 +153,11 @@ export default function FleetPage() {
                           </TableCell>
                           <TableCell>
                             {car.available ? (
-                              <span className="inline-flex items-center rounded-sm border border-brand-ink px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-label text-brand-ink">
+                              <span className="inline-flex items-center rounded-sm bg-brand-ink px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-label text-brand-canvas">
                                 Available
                               </span>
                             ) : (
-                              <span className="inline-flex items-center px-0 py-0.5 text-[11px] font-medium uppercase tracking-label text-brand-muted">
+                              <span className="text-[11px] font-medium uppercase tracking-label text-brand-muted">
                                 Busy
                               </span>
                             )}

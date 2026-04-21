@@ -38,21 +38,18 @@ function NavLinks({ onClose }: { onClose?: () => void }) {
               to={href}
               onClick={onClose}
               className={cn(
-                'group relative flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors',
+                'group flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors',
                 isActive
                   ? 'text-brand-canvas'
                   : 'text-brand-subtle hover:text-brand-canvas'
               )}
               aria-current={isActive ? 'page' : undefined}
             >
-              <Icon className="h-4 w-4 flex-shrink-0" strokeWidth={1.5} />
+              <Icon
+                className={cn('h-4 w-4 flex-shrink-0', isActive ? 'text-brand-accent' : '')}
+                strokeWidth={1.5}
+              />
               {label}
-              {isActive && (
-                <span
-                  aria-hidden
-                  className="absolute bottom-1 left-3 right-3 h-px bg-brand-accent"
-                />
-              )}
             </Link>
           );
         })}
@@ -99,7 +96,7 @@ export default function Sidebar() {
 
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
